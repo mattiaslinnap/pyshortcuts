@@ -1,1 +1,4 @@
-Python Helpers
+Python Helpers.
+
+Depends on Python2.6 and various extra packages at the moment.
+I will convert it to Python2.7 when I get round to upgrading my lab computer.
