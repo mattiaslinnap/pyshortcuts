@@ -1,9 +1,9 @@
 from django.contrib.gis import admin
 from django.contrib.gis.geos import Point
 
-def readonly_admin(model):
+def readonly_admin(model, model_admin_base=admin.ModelAdmin):
     return type('ReadOnly%sAdmin' % model.__name__,
-                (admin.ModelAdmin,),
+                (model_admin_base,),
                 {'readonly_fields': [f.name for f in model._meta.fields]})
 
 
