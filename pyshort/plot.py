@@ -1,8 +1,8 @@
-#!/usr/bin/python
 '''
 Utilities for matplotlib.
 '''
-from __future__ import division
+from __future__ import absolute_import, division, print_function, unicode_literals
+from future_builtins import *  # ascii, filter, hex, map, oct, zip
 
 from matplotlib import pyplot as pp
 import sys
