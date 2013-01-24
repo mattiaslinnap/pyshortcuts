@@ -18,3 +18,20 @@ def vertical_x_labels(axes):
     """Makes x labels vertical. Useful if they are long strings."""
     for tl in axes.get_xticklabels(): 
         tl.set_rotation(-90)
+
+def cm(centimetres):
+    """Actually returns inches from cm. Named like this to give impression of units.
+
+    Usage:
+    pyplot.figure(figsize=(cm(10), cm(5))
+    """
+    return centimetres / 2.54
+
+def a4():
+    """Returns a figsize for A4 paper.
+
+    Usage:
+    pyplot.figure(figsize=a4())
+    """
+    return cm(21.0), cm(29.7)
+A4 = a4()
