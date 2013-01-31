@@ -1,17 +1,17 @@
-#!/usr/bin/python
-'''
+#!/usr/bin/env python
+"""
 Utilities for working with data structures and iterables.
-'''
-from __future__ import division
+"""
+from __future__ import absolute_import, division, print_function, unicode_literals
+from future_builtins import *  # ascii, filter, hex, map, oct, zip
 
-from itertools import izip
-import unittest2
+import unittest
 
 def grouper(n, iterable):
     """Groups iterable into tuples. A B C D E -> (A,B) (C, D)"""
     assert n > 0
     args = [iter(iterable)] * n
-    return izip(*args)
+    return zip(*args)
 
 def subsample(limit, lst):
     """Yields limit elements from lst, spaced at equal intervals. (as much as possible if the length does not divide exactly).
@@ -33,8 +33,19 @@ def avg(lst):
     """Average value of the list. Must support len()"""
     return sum(lst) / len(lst)
 
+def first(iterable):
+    return next(iter(iterable))
 
-class IterablesTest(unittest2.TestCase):
+def last(iterable):
+    if hasattr(iterable, '__getitem__'):
+        return iterable[-1]
+    else:
+        lst = None
+        for i in iterable:
+            lst = i
+        return lst
+
+class IterablesTest(unittest.TestCase):
     def test_grouper(self):
         self.assertEqual(list(grouper(1, '')), [])
         self.assertEqual(list(grouper(1, 'ABCD')), [('A',), ('B',), ('C',), ('D',)])
@@ -63,5 +74,38 @@ class IterablesTest(unittest2.TestCase):
         self.assertEqual(avg([1,2,3]), 2)
         self.assertEqual(avg([2,3]), 2.5)
 
+class FirstTest(unittest.TestCase):
+    def test_list(self):
+        self.assertEqual(1, first([1]))
+        self.assertEqual(1, first([1,2,3]))
+
+    def test_iter(self):
+        def gen(lst):
+            for i in lst:
+                yield i
+
+        self.assertEqual(1, first(gen([1])))
+        self.assertEqual(1, first(gen([1,2,3])))
+
+    def test_set(self):
+        self.assertEqual(1, first(set([1])))
+        self.assertEqual(1, first(set([1,2,3])))
+
+class LastTest(unittest.TestCase):
+    def test_list(self):
+        self.assertEqual(1, last([1]))
+        self.assertEqual(3, last([1,2,3]))
+
+    def test_iter(self):
+        def gen(lst):
+            for i in lst:
+                yield i
+        self.assertEqual(1, last(gen([1])))
+        self.assertEqual(3, last(gen([1,2,3])))
+
+    def test_set(self):
+        self.assertEqual(1, last(set([1])))
+        self.assertIn(last(set([1,2,3])), [1,2,3])
+
 if __name__ == '__main__':
-    unittest2.main()
+    unittest.main()
