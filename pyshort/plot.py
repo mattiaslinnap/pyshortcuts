@@ -29,14 +29,9 @@ def cm(centimetres):
     """
     return centimetres / 2.54
 
-def a4():
-    """Returns a figsize for A4 paper.
-
-    Usage:
-    pyplot.figure(figsize=a4())
-    """
-    return cm(21.0), cm(29.7)
-A4 = a4()
+# Figure sizes for A4 paper.
+A4 = cm(21.0), cm(29.7)
+A4_LANDSCAPE = cm(29.7), cm(21.0)
 
 def hist_fixed_bins(axes, data, bins, log=False, open_end=False):
     """Plots a histogram with given bins, but equal plotted bin widths.
