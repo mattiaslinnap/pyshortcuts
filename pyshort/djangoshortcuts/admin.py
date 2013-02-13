@@ -1,10 +1,14 @@
 from django.contrib.gis import admin
 from django.contrib.gis.geos import Point
 
+def permission_denied(self, request, obj=None):
+    return False
+
 def readonly_admin(model, model_admin_base=admin.ModelAdmin):
     return type('ReadOnly%sAdmin' % model.__name__,
                 (model_admin_base,),
-                {'readonly_fields': [f.name for f in model._meta.fields]})
+                {'readonly_fields': [f.name for f in model._meta.fields],
+                 'has_delete_permission': permission_denied})
 
 
 class CambridgeOsmGeoAdmin(admin.OSMGeoAdmin):
