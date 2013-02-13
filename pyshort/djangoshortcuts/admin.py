@@ -8,6 +8,7 @@ def readonly_admin(model, model_admin_base=admin.ModelAdmin):
     return type('ReadOnly%sAdmin' % model.__name__,
                 (model_admin_base,),
                 {'readonly_fields': [f.name for f in model._meta.fields],
+                 'has_add_permission': permission_denied,
                  'has_delete_permission': permission_denied})
 
 
