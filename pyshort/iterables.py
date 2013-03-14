@@ -13,6 +13,24 @@ def grouper(n, iterable):
     args = [iter(iterable)] * n
     return zip(*args)
 
+def igrouper(iterable, n):
+    """Yields subiterables, each with n elements. A B C D E -> (A,B), (C, D), (E)."""
+    assert n > 0
+    it = iter(iterable)
+    end = [False]  # end must be a mutable value, so that the inner() closure can modify it.
+    def inner():
+        i = 0
+        for elem in it:
+            yield elem
+            i += 1
+            if i >= n:
+                break
+        else:
+            end[0] = True
+    while not end[0]:
+        yield inner()
+
+
 def subsample(limit, lst):
     """Yields limit elements from lst, spaced at equal intervals. (as much as possible if the length does not divide exactly).
     Lst must support len(), can't be a pure iterable.
