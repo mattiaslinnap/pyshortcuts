@@ -10,6 +10,15 @@ import unittest
 
 from pyshort.iterables import first, last
 
+
+def map_to_small_integers(arr):
+    """Returns an int32 array of len(arr), with each unique element mapped to an unique dense integer.
+    The integers are assigned from 0, counting in sorted order of the initial array.
+    """
+    sorted_unique, inverse = np.unique(arr, return_inverse=True)
+    return inverse
+
+
 def split_nonzero(arr):
     """Yields [start,end) indexes for sections where the boolean array is zero.
 
