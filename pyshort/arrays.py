@@ -11,12 +11,19 @@ import unittest
 from pyshort.iterables import first, last
 
 
-def map_to_small_integers(arr):
+def map_to_small_integers(arr, return_index=False):
     """Returns an int32 array of len(arr), with each unique element mapped to an unique dense integer.
     The integers are assigned from 0, counting in sorted order of the initial array.
+
+    If return_index is True, also returns a second array: indexes of arr which were used for each unique element.
+    The indexes list has length of the number of unique elements.
     """
-    sorted_unique, inverse = np.unique(arr, return_inverse=True)
-    return inverse
+    if return_index:
+        sorted_unique, index, inverse = np.unique(arr, return_index=True, return_inverse=True)
+        return inverse, index
+    else:
+        sorted_unique, inverse = np.unique(arr, return_inverse=True)
+        return inverse
 
 
 def split_nonzero(arr):
@@ -46,6 +53,28 @@ def split_nonzero(arr):
         splits.append((start, len(arr)))
 
     return np.array(splits, dtype=int)
+
+
+class MapToSmallIntegersTest(unittest.TestCase):
+    def assertArrEq(self, a, b):
+        self.assertEqual(list(a), list(b))
+
+    def test_empty(self):
+        self.assertArrEq([], map_to_small_integers(np.array([])))
+
+    def test_distinct(self):
+        self.assertArrEq([1, 0, 2], map_to_small_integers(np.array([5, 3, 7])))
+
+    def test_duplicate(self):
+        self.assertArrEq([1, 0, 2, 0, 1], map_to_small_integers(np.array([5, 3, 7, 3, 5])))
+
+    def test_return_index_distinct(self):
+        small, indices = map_to_small_integers(np.array([5, 9, 7]), return_index=True)
+        self.assertArrEq([0, 2, 1], indices)
+
+    def test_return_index_duplicate(self):
+        small, indices = map_to_small_integers(np.array([5, 3, 7, 3, 5]), return_index=True)
+        self.assertArrEq([1, 0, 2], indices)
 
 
 class SplitNonzeroTest(unittest.TestCase):
