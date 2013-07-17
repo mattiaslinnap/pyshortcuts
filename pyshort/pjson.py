@@ -15,7 +15,9 @@ class NumpyJSONEncoder(json.JSONEncoder):
         for dtype in [np.float, np.float32, np.float64]:
             if isinstance(obj, dtype):
                 return float(obj)
-        return super(NumpyJSONEncoder, self).default(self, obj)
+        if isinstance(obj, np.ndarray) and obj.ndim == 1:
+            return list(obj)
+        return super(NumpyJSONEncoder, self).default(obj)
 
 
 def dumps(obj, *args, **kwargs):
