@@ -61,7 +61,7 @@ def set_color_cycle_from_cmap(axes, cmap_name='spectral', num_colors=10, repeat_
     axes.set_color_cycle(colors)
 
 
-def density_plot(ax, x, y_samples, percentile_step=5, cmap=mcm.Blues):
+def density_fill_plot(ax, x, y_samples, percentile_step=5, cmap=mcm.Blues, label=None):
     """Plots density, as sort of a heatmap with linear filled lines.
 
     y_samples must be a 2-dimensional array. Each row is one x value, and each column is a sample from some y distribution.
@@ -73,6 +73,9 @@ def density_plot(ax, x, y_samples, percentile_step=5, cmap=mcm.Blues):
     assert 0 in percentiles
     assert 50 in percentiles
     assert 100 in percentiles
+
+    if not isinstance(y_samples, np.ndarray):
+        y_samples = np.array(y_samples)
 
     # List of arrays. Each list is for a percentile, each array element is y value at x.
     y_list = np.percentile(y_samples, percentiles, axis=1)
@@ -87,11 +90,44 @@ def density_plot(ax, x, y_samples, percentile_step=5, cmap=mcm.Blues):
         else:
             # Color based on this percentile (line above)
             color = cmap((100 - percentiles[i]) / 50)
-        ax.fill_between(x, y1, y2, color=color)
+        if percentiles[i] == 50:
+            ax.fill_between(x, y1, y2, color=color, label=label)
+        else:
+            ax.fill_between(x, y1, y2, color=color)
 
 
+def density_line_plot(ax, x, y_samples, percentile_step=5, color='b', label=None):
+    """Plots density, as individual thin lines for percentiles.
 
+    y_samples must be a 2-dimensional array. Each row is one x value, and each column is a sample from some y distribution.
+    percentile_step ought to divide into 100 evenly.
+    """
+    num_x = len(y_samples)
+    percentiles = range(0, 100 + percentile_step, percentile_step)
+    assert len(percentiles) % 2 == 1
+    assert 0 in percentiles
+    assert 50 in percentiles
+    assert 100 in percentiles
 
+    if not isinstance(y_samples, np.ndarray):
+        y_samples = np.array(y_samples)
+
+    # List of arrays. Each list is for a percentile, each array element is y value at x.
+    y_list = np.percentile(y_samples, percentiles, axis=1)
+    assert len(y_list) == len(percentiles)
+    for i in xrange(len(percentiles)):
+        y = y_list[i]
+        # Alpha ranges from 0.0 to 1.0 to 0.0 as percentile goes 0-50-100.
+        if i <= len(percentiles) / 2:
+            # Alpha based on next percentile (line below)
+            alpha = percentiles[i] / 50
+        else:
+            # Color based on this percentile (line above)
+            alpha = (100 - percentiles[i]) / 50
+        if percentiles[i] == 50:
+            ax.plot(x, y, color=color, alpha=alpha, label=label)
+        else:
+            ax.plot(x, y, color=color, alpha=alpha)
 
 
 
