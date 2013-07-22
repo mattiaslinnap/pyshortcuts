@@ -8,8 +8,6 @@ from future_builtins import *  # ascii, filter, hex, map, oct, zip
 import numpy as np
 import unittest
 
-from pyshort.iterables import first, last
-
 
 def map_to_small_integers(arr, return_index=False):
     """Returns an int32 array of len(arr), with each unique element mapped to an unique dense integer.
