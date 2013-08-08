@@ -4,8 +4,8 @@ Utilities for matplotlib.
 from __future__ import absolute_import, division, print_function, unicode_literals
 from future_builtins import *  # ascii, filter, hex, map, oct, zip
 
+import matplotlib
 from matplotlib import cm as mcm
-from matplotlib import pyplot as pp
 import numpy as np
 import sys
 
@@ -32,9 +32,26 @@ def cm(centimetres):
     """
     return centimetres / 2.54
 
+
+def cms(width, height):
+    return cm(width), cm(height)
+
+
 # Figure sizes for A4 paper.
-A4 = cm(21.0), cm(29.7)
-A4_LANDSCAPE = cm(29.7), cm(21.0)
+A4 = cms(21.0, 29.7)
+A4_LANDSCAPE = cms(29.7, 21.0)
+
+
+def rc_print_settings():
+    """Configures fonts, text sizes and line widths for figures inserted into A4 papers."""
+    matplotlib.rc('text', usetex=True)
+    matplotlib.rc('font', family='serif', serif=['Computer Modern Roman'], size=6)
+    matplotlib.rc('lines', linewidth=0.5)  # Plots
+    matplotlib.rc('patch', linewidth=0.5)  # Polygons, for example legend
+    matplotlib.rc('axes', linewidth=0.5)  # Axis borders and ticks
+    matplotlib.rc('legend', fontsize=6)
+    matplotlib.rc('figure', autolayout=True)
+    matplotlib.rc('savefig', dpi=300, bbox='tight', format='pdf')
 
 
 def hist_fixed_bins(axes, data, bins, log=False, open_end=False):
