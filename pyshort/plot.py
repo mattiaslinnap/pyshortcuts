@@ -100,17 +100,19 @@ def density_fill_plot(ax, x, y_samples, percentile_step=5, cmap=mcm.Blues, label
     for i in xrange(len(percentiles) - 1):
         y1 = y_list[i]
         y2 = y_list[i + 1]
+        pct = percentiles[i] + percentile_step / 2
+
         # Color distance ranges from 0.0 to 1.0 to 0.0 as percentile goes 0-50-100.
-        if i < len(percentiles) / 2:
-            # Color based on next percentile (line below)
-            color = cmap(percentiles[i + 1] / 50)
+        if pct <= 50:
+            distance = pct / 50
         else:
-            # Color based on this percentile (line above)
-            color = cmap((100 - percentiles[i]) / 50)
-        if percentiles[i] == 50:
-            ax.fill_between(x, y1, y2, color=color, label=label)
-        else:
-            ax.fill_between(x, y1, y2, color=color)
+            distance = (100 - pct) / 50
+        assert distance >= 0.0
+        assert distance < 1.0
+        color = cmap(distance)[:3]  # Remove alpha
+        alpha = distance
+        ax.fill_between(x, y1, y2, color=color, alpha=alpha)
+    ax.plot(x, y_list[len(percentiles) // 2], color=cmap(1.0), label=label)
 
 
 def density_line_plot(ax, x, y_samples, percentile_step=5, color='b', label=None):
