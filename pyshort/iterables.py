@@ -7,11 +7,25 @@ from future_builtins import *  # ascii, filter, hex, map, oct, zip
 
 import unittest
 
+
+def pairs(iterable):
+    """Returns successive pairs of elements. A B C D -> (A, B), (B, C), (C, D)
+
+    Useful for calculating deltas.
+    """
+    iterable = iter(iterable)
+    first = iterable.next()
+    for second in iterable:
+        yield (first, second)
+        first = second
+
+
 def grouper(n, iterable):
     """Groups iterable into tuples. A B C D E -> (A,B) (C, D)"""
     assert n > 0
     args = [iter(iterable)] * n
     return zip(*args)
+
 
 def igrouper(iterable, n):
     """Yields subiterables, each with n elements. A B C D E -> (A,B), (C, D), (E)."""
@@ -47,12 +61,15 @@ def subsample(limit, lst):
             yielded += 1
         passed += 1
 
+
 def avg(lst):
     """Average value of the list. Must support len()"""
     return sum(lst) / len(lst)
 
+
 def first(iterable):
     return next(iter(iterable))
+
 
 def last(iterable):
     if hasattr(iterable, '__getitem__'):
@@ -63,7 +80,13 @@ def last(iterable):
             lst = i
         return lst
 
+
 class IterablesTest(unittest.TestCase):
+    def test_pairs(self):
+        self.assertEqual(list(pairs([1, 2])), [(1, 2)])
+        self.assertEqual(list(pairs([1, 2, 3])), [(1, 2), (2, 3)])
+        self.assertEqual(list(pairs([1, 2, 3, 4])), [(1, 2), (2, 3), (3, 4)])
+
     def test_grouper(self):
         self.assertEqual(list(grouper(1, '')), [])
         self.assertEqual(list(grouper(1, 'ABCD')), [('A',), ('B',), ('C',), ('D',)])
@@ -92,6 +115,7 @@ class IterablesTest(unittest.TestCase):
         self.assertEqual(avg([1,2,3]), 2)
         self.assertEqual(avg([2,3]), 2.5)
 
+
 class FirstTest(unittest.TestCase):
     def test_list(self):
         self.assertEqual(1, first([1]))
@@ -109,6 +133,7 @@ class FirstTest(unittest.TestCase):
         self.assertEqual(1, first(set([1])))
         self.assertEqual(1, first(set([1,2,3])))
 
+
 class LastTest(unittest.TestCase):
     def test_list(self):
         self.assertEqual(1, last([1]))
@@ -124,6 +149,7 @@ class LastTest(unittest.TestCase):
     def test_set(self):
         self.assertEqual(1, last(set([1])))
         self.assertIn(last(set([1,2,3])), [1,2,3])
+
 
 if __name__ == '__main__':
     unittest.main()
