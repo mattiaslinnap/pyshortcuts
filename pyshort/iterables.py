@@ -8,16 +8,26 @@ from future_builtins import *  # ascii, filter, hex, map, oct, zip
 import unittest
 
 
-def pairs(iterable):
-    """Returns successive pairs of elements. A B C D -> (A, B), (B, C), (C, D)
+def successive(iterable, n=2):
+    """Returns successive pairs or larger tuples of elements.
+    With n=2: A B C D -> (A, B), (B, C), (C, D)
+    With n=3: A B C D -> (A, B, C), (B, C, D)
 
-    Useful for calculating deltas.
+    Useful for calculating deltas or "surrounding context" when iterating.
     """
     iterable = iter(iterable)
-    first = iterable.next()
-    for second in iterable:
-        yield (first, second)
-        first = second
+    # Prefill buffer of size n.
+    buffer = []
+    for i in xrange(n):
+        buffer.append(iterable.next())
+    # Buffer must be copied, so that caller can call list(successive()) if needed.
+    # If it were returned in-place, all copies would keep changing.
+    yield tuple(buffer)
+    # Rotate buffer for all new elements.
+    for elem in iterable:
+        buffer.pop(0)
+        buffer.append(elem)
+        yield tuple(buffer)
 
 
 def grouper(n, iterable):
@@ -82,10 +92,13 @@ def last(iterable):
 
 
 class IterablesTest(unittest.TestCase):
-    def test_pairs(self):
-        self.assertEqual(list(pairs([1, 2])), [(1, 2)])
-        self.assertEqual(list(pairs([1, 2, 3])), [(1, 2), (2, 3)])
-        self.assertEqual(list(pairs([1, 2, 3, 4])), [(1, 2), (2, 3), (3, 4)])
+    def test_successive(self):
+        self.assertEqual(list(successive([1, 2], n=2)), [(1, 2)])
+        self.assertEqual(list(successive([1, 2, 3], n=2)), [(1, 2), (2, 3)])
+        self.assertEqual(list(successive([1, 2, 3, 4], n=2)), [(1, 2), (2, 3), (3, 4)])
+
+        self.assertEqual(list(successive([1, 2, 3], n=3)), [(1, 2, 3)])
+        self.assertEqual(list(successive([1, 2, 3, 4], n=3)), [(1, 2, 3), (2, 3, 4)])
 
     def test_grouper(self):
         self.assertEqual(list(grouper(1, '')), [])
