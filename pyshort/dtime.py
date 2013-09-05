@@ -10,6 +10,7 @@ def dtime(millis_since_1970):
     millis = float(millis_since_1970)  # In case it's a numpy datatype
     return (datetime.datetime(1970, 1, 1) + datetime.timedelta(milliseconds=millis))
 
+
 def unixtime(dt):
     """Returns milliseconds since 1970 for datetime dt."""
-    return (int)(1000 * (dt - datetime.datetime(1970, 1, 1)))
+    return (int)(1000 * (dt - datetime.datetime(1970, 1, 1)).total_seconds())
