@@ -54,15 +54,19 @@ def rc_print_settings():
     matplotlib.rc('savefig', dpi=300, bbox='tight', format='pdf')
 
 
-def hist_fixed_bins(axes, data, bins, log=False, open_end=False):
+def hist_fixed_bins(axes, data, bins, log=False, open_end=False, normed=False):
     """Plots a histogram with given bins, but equal plotted bin widths.
     Useful if bin widths are very unequal.
     open_end=True appends a bin edge at +infinity.
+    normed=True makes the values a probability *mass* function: bin counts are divided by the total number of data points (the sum of y values will sum to 1.0).
     """
     if open_end:
         bins = bins + [float('inf')]
 
     hist, _ = np.histogram(data, bins=bins)
+    if normed:
+        hist = np.array(hist, dtype=np.float64)
+        hist /= len(data)
     axes.bar(range(len(hist)), hist, width=0.99, log=log)
     axes.set_xticks(range(len(bins)))
     axes.set_xticklabels([str(b) for b in bins])
