@@ -29,3 +29,20 @@ def color(text, col='r'):
                  'w': '1;37'   # white
                  }[col]
     return '\033[%sm%s\033[0m' % (colorcode, text)
+
+
+def tabulate(rows, sep=' ', end='\n', join=True):
+    """Takes a list of rows, each a list with equal number of column elements.
+    """
+    assert len(set(len(r) for r in rows)) == 1, 'All rows must have the same number of columns.'
+    rows = [[unicode(c) for c in r] for r in rows]  # Map to strings.
+    num_rows = len(rows)
+    num_cols = len(rows[0])
+    col_widths = [max(len(rows[ri][ci]) for ri in xrange(num_rows)) for ci in xrange(num_cols)]
+    rows = [['{0:<{width}}'.format(r[ci], width=col_widths[ci]) for ci in xrange(num_cols)] for r in rows]  # Map to maximum-width column strings.
+    text_rows = [sep.join(r) for r in rows]
+    if join:
+        return end.join(text_rows)
+    else:
+        return text_rows
+
