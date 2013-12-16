@@ -54,11 +54,12 @@ def rc_print_settings():
     matplotlib.rc('savefig', dpi=300, bbox='tight', format='pdf')
 
 
-def hist_fixed_bins(axes, data, bins, log=False, open_end=False, normed=False, color='b', alpha=1.0, label=None, ticklabels=None):
+def hist_fixed_bins(axes, data, bins, log=False, open_end=False, normed=False, color='b', alpha=1.0, label=None, ticklabels=None, ticklabels_interval=1):
     """Plots a histogram with given bins, but equal plotted bin widths.
     Useful if bin widths are very unequal.
     open_end=True appends a bin edge at +infinity.
     normed=True makes the values a probability *mass* function: bin counts are divided by the total number of data points (the sum of y values will sum to 1.0).
+    If ticklabels is None, tick labels are shown for every ticklabels_interval bin. The first and inf are always shown.
     """
     if open_end:
         bins = bins + [float('inf')]
@@ -69,7 +70,15 @@ def hist_fixed_bins(axes, data, bins, log=False, open_end=False, normed=False, c
         hist /= len(data)
     axes.bar(range(len(hist)), hist, width=0.99, log=log, color=color, alpha=alpha, label=label)
     axes.set_xticks(range(len(bins)))
-    axes.set_xticklabels(ticklabels if ticklabels else [str(b) for b in bins])
+    if ticklabels is None:
+        ticklabels = [str(b) for b in bins]
+        ticklabels[-1] = ''
+        for i in xrange(1, len(ticklabels) - 1):  # Always keep first and last label.
+            if i % ticklabels_interval != 0:
+                ticklabels[i] = ''
+        ticklabels[-2] = ticklabels[-2] + '+'
+    axes.set_xticklabels(ticklabels)
+    axes.set_xlim(0, len(bins) - 1)
 
 
 def set_color_cycle_from_cmap(axes, cmap_name='spectral', num_colors=10, repeat_each=1):
