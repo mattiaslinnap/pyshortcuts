@@ -20,6 +20,7 @@ def gunzip(gzdata):
 
 
 def color(text, col='r'):
+    """Returns text surrounded by Bash terminal colour codes. Useful for easier to notice errors in long outputs."""
     colorcode = {'r': '1;31',  # light red
                  'b': '1;34',  # light blue
                  'g': '1;32',  # light green
@@ -32,7 +33,11 @@ def color(text, col='r'):
 
 
 def tabulate(rows, sep=' ', end='\n', join=True):
-    """Takes a list of rows, each a list with equal number of column elements.
+    """Makes an ASCII-formatted table.
+    Rows must be a list of rows, each a list with equal number of column elements.
+    Elements can be of any type, they are converted to strings before finding maximum width of each column.
+
+    For copy-pasting tables into LaTeX, set sep=' & ' and end='\\\\\n'.
     """
     assert len(set(len(r) for r in rows)) == 1, 'All rows must have the same number of columns.'
     rows = [[unicode(c) for c in r] for r in rows]  # Map to strings.
