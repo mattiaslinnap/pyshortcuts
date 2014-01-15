@@ -8,9 +8,9 @@ import datetime
 def dtime(millis_since_1970):
     """Returns a timezone-unaware datetime in UTC for a unix timestamp (milliseconds since 1970)."""
     millis = float(millis_since_1970)  # In case it's a numpy datatype
-    return (datetime.datetime(1970, 1, 1) + datetime.timedelta(milliseconds=millis))
+    return datetime.datetime(1970, 1, 1) + datetime.timedelta(milliseconds=millis)
 
 
 def unixtime(dt):
     """Returns milliseconds since 1970 for datetime dt."""
-    return (int)(1000 * (dt - datetime.datetime(1970, 1, 1)).total_seconds())
+    return int(1000 * (dt - datetime.datetime(1970, 1, 1)).total_seconds())

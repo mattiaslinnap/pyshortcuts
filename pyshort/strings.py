@@ -4,6 +4,7 @@ from future_builtins import *  # ascii, filter, hex, map, oct, zip
 
 import cStringIO
 import gzip
+import sys
 
 
 def printf(fmt=None, *args, **kwargs):
@@ -46,3 +47,32 @@ def tabulate(rows, sep=' ', end='\n', join=True):
     else:
         return text_rows
 
+
+# Global state for building up a table in quick scripts.
+
+_TABLE_ROWS = []
+
+
+def table_row(cols):
+    global _TABLE_ROWS
+    _TABLE_ROWS.append(cols)
+    assert len(cols) == len(_TABLE_ROWS[0]), 'All rows must have the same number of columns. New is %d, old is %d.' % (len(cols), len(_TABLE_ROWS[0]))
+
+
+def table_print(file=None, files=None, **kwargs):
+    global _TABLE_ROWS
+
+    if file and files:
+        raise RuntimeError('Only one out of file and files can be given at a time.')
+    if not files:
+        files = [file] if file else [sys.stderr]
+
+    table = tabulate(_TABLE_ROWS, **kwargs)
+    for fname in files:
+        if isinstance(fname, basestring):
+            with open(fname, 'w') as f:
+                print(table, file=f)
+        else:
+            # Expecting a file-like object or stream.
+            print(table, file=fname)
+    _TABLE_ROWS = []

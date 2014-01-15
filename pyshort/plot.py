@@ -45,13 +45,13 @@ A4_LANDSCAPE = cms(29.7, 21.0)
 def rc_print_settings():
     """Configures fonts, text sizes and line widths for figures inserted into A4 papers."""
     matplotlib.rc('text', usetex=True)
-    matplotlib.rc('font', family='serif', serif=['Computer Modern Roman'], size=6)
+    matplotlib.rc('font', family='serif', serif=['Computer Modern Roman'], size=10)
     matplotlib.rc('lines', linewidth=0.5)  # Plots
     matplotlib.rc('patch', linewidth=0.5)  # Polygons, for example legend
     matplotlib.rc('axes', linewidth=0.5)  # Axis borders and ticks
     matplotlib.rc('legend', fontsize=6)
     matplotlib.rc('figure', autolayout=True)
-    matplotlib.rc('savefig', dpi=300, bbox='tight', format='pdf')
+    matplotlib.rc('savefig', dpi=300, format='pdf', bbox='tight')
 
 
 def hist_fixed_bins(axes, data, bins, log=False, open_end=False, normed=False, color='b', alpha=1.0, label=None, ticklabels=None, ticklabels_interval=1):
