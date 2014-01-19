@@ -4,10 +4,14 @@ Utilities for matplotlib.
 from __future__ import absolute_import, division, print_function, unicode_literals
 from future_builtins import *  # ascii, filter, hex, map, oct, zip
 
+import logging
 import matplotlib
 from matplotlib import cm as mcm
 import numpy as np
 import sys
+
+
+logger = logging.getLogger(__name__)
 
 
 def close_figure_on_key(figure):
@@ -91,25 +95,65 @@ def set_color_cycle_from_cmap(axes, cmap_name='spectral', num_colors=10, repeat_
     axes.set_color_cycle(colors)
 
 
-def density_fill_plot(ax, x, y_samples, percentile_step=5, cmap=mcm.Blues, label=None):
-    """Plots density, as sort of a heatmap with linear filled lines.
+def _percentile_values(y_samples, percentile_step):
+    """Computes percentiles for samples.
 
-    y_samples must be a 2-dimensional array. Each row is one x value, and each column is a sample from some y distribution.
-    percentile_step ought to divide into 100 evenly.
+    y_samples should be a 2D numpy array or a list of lists of samples.
+    Each row (outer list) is for one X value, and each column (inner list) is a sample of Y values at that X.
+
+    Returns the percentiles list, and a list of numpy arrays.
+    The each outer list element is for one percentile value. Each array element is the Y at that percentile for each X.
     """
-    num_x = len(y_samples)
     percentiles = range(0, 100 + percentile_step, percentile_step)
     assert len(percentiles) % 2 == 1
     assert 0 in percentiles
     assert 50 in percentiles
     assert 100 in percentiles
 
-    if not isinstance(y_samples, np.ndarray):
-        y_samples = np.array(y_samples)
+    if isinstance(y_samples, np.ndarray):
+        assert len(y_samples.shape) == 2, 'y_samples must be a 2D numpy array or a list of lists of numbers.'
+        assert len(y_samples) > 0, 'y_samples must not be empty.'
+        assert len(y_samples[0]) > 0, 'y_samples must not be empty.'
+    else:
+        assert isinstance(y_samples, list), 'y_samples must be a 2D numpy array or a list of lists of numbers.'
+        assert y_samples, 'y_samples must not be empty.'
+        for ys in y_samples:
+            assert isinstance(ys, list), 'y_samples must be a 2D numpy array or a list of lists of numbers.'
+            assert ys, 'y_samples must not have empty inner lists, each X value must have at least one Y sample.'
+        if len(set(len(ys) for ys in y_samples)) == 1:
+            # All y_samples rows have the same length. Can convert into a numpy array for fast percentile computation.
+            y_samples = np.array(y_samples)
 
-    # List of arrays. Each list is for a percentile, each array element is y value at x.
-    y_list = np.percentile(y_samples, percentiles, axis=1)
+    # y_list is a list of arrays. Each list is for a percentile, each array element is y value at x.
+    if isinstance(y_samples, np.ndarray):
+        # y_samples is a numpy array, can compute percentiles in one go.
+        y_list = np.percentile(y_samples, percentiles, axis=1)
+    else:
+        # y_samples is a list of lists of uneven lengths. Slow mode.
+        logger.warning('Slow percentile computation: consider switching to 2D numpy arrays.')
+        num_x = len(y_samples)
+        y_list = []
+        for p in percentiles:
+            y_list.append(np.zeros(num_x, dtype=np.float64))
+            for i in xrange(num_x):
+                y_list[-1][i] = np.percentile(y_samples[i], p)
+
     assert len(y_list) == len(percentiles)
+    return percentiles, y_list
+
+
+def density_fill_plot(ax, xs, y_samples, percentile_step=5, cmap=mcm.Blues, label=None):
+    """Plots density, as sort of a heatmap with linear filled lines.
+
+    y_samples must be a 2-dimensional array. Each row is one x value, and each column is a sample from some y distribution.
+    percentile_step ought to divide into 100 evenly.
+    """
+    assert len(xs) == len(y_samples)
+    num_x = len(xs)
+    assert num_x > 0
+
+    percentiles, y_list = _percentile_values(y_samples, percentile_step)
+
     for i in xrange(len(percentiles) - 1):
         y1 = y_list[i]
         y2 = y_list[i + 1]
@@ -124,29 +168,22 @@ def density_fill_plot(ax, x, y_samples, percentile_step=5, cmap=mcm.Blues, label
         assert distance < 1.0
         color = cmap(distance)[:3]  # Remove alpha
         alpha = distance
-        ax.fill_between(x, y1, y2, color=color, alpha=alpha)
-    ax.plot(x, y_list[len(percentiles) // 2], color=cmap(1.0), label=label)
+        ax.fill_between(xs, y1, y2, color=color, alpha=alpha)
+    ax.plot(xs, y_list[len(percentiles) // 2], color=cmap(1.0), label=label)
 
 
-def density_line_plot(ax, x, y_samples, percentile_step=5, color='b', label=None):
+def density_line_plot(ax, xs, y_samples, percentile_step=5, color='b', label=None):
     """Plots density, as individual thin lines for percentiles.
 
     y_samples must be a 2-dimensional array. Each row is one x value, and each column is a sample from some y distribution.
     percentile_step ought to divide into 100 evenly.
     """
-    num_x = len(y_samples)
-    percentiles = range(0, 100 + percentile_step, percentile_step)
-    assert len(percentiles) % 2 == 1
-    assert 0 in percentiles
-    assert 50 in percentiles
-    assert 100 in percentiles
+    assert len(xs) == len(y_samples)
+    num_x = len(xs)
+    assert num_x > 0
 
-    if not isinstance(y_samples, np.ndarray):
-        y_samples = np.array(y_samples)
+    percentiles, y_list = _percentile_values(y_samples, percentile_step)
 
-    # List of arrays. Each list is for a percentile, each array element is y value at x.
-    y_list = np.percentile(y_samples, percentiles, axis=1)
-    assert len(y_list) == len(percentiles)
     for i in xrange(len(percentiles)):
         y = y_list[i]
         # Alpha ranges from 0.0 to 1.0 to 0.0 as percentile goes 0-50-100.
@@ -157,9 +194,9 @@ def density_line_plot(ax, x, y_samples, percentile_step=5, color='b', label=None
             # Color based on this percentile (line above)
             alpha = (100 - percentiles[i]) / 50
         if percentiles[i] == 50:
-            ax.plot(x, y, color=color, alpha=alpha, label=label)
+            ax.plot(xs, y, color=color, alpha=alpha, label=label)
         else:
-            ax.plot(x, y, color=color, alpha=alpha)
+            ax.plot(xs, y, color=color, alpha=alpha)
 
 
 
